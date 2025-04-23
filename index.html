@@ -1,0 +1,162 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fluent Docs | Smart Document Tools</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar" aria-label="Navigation">
+      <div class="logo-container">
+        <div class="logo-icon">
+          <svg viewBox="0 0 32 32" aria-hidden="true">
+            <path fill="url(#grad1)" d="M16 0 L32 16 L16 32 L0 16 Z"/>
+            <path fill="white" d="M12 8 L20 16 L12 24 L8 20 L16 12 Z"/>
+            <defs>
+              <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#6C5CE7"/>
+                <stop offset="100%" style="stop-color:#00CEC9"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <h1>Fluent<span>Docs</span></h1>
+      </div>
+      <p class="tagline">Smart Tools for Seamless Conversions</p>
+      <p class="developer">Crafted by Swapan</p>
+      <div class="quick-links">
+        <h4>Quick Access</h4>
+        <a href="tools/compressor.html" class="quick-link">
+          <svg viewBox="0 0 24 24" width="16" height="16">
+            <rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="currentColor"/>
+          </svg>
+          Image Tools
+        </a>
+        <a href="tools/pdf-to-jpg.html" class="quick-link">
+          <svg viewBox="0 0 24 24" width="16" height="16">
+            <path fill="none" stroke="currentColor" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          </svg>
+          PDF Tools
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="top-bar">
+        <div class="search-container">
+          <div class="search-bar">
+            <svg class="search-icon" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8" stroke="currentColor" fill="none"/>
+              <path stroke="currentColor" d="M21 21l-4.35-4.35"/>
+            </svg>
+            <input type="text" placeholder="Search tools..." class="search-input" aria-label="Search tools" id="search-input">
+          </div>
+        </div>
+        <button class="theme-btn" id="theme-toggle" aria-label="Toggle theme">
+          <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="5" fill="none" stroke="currentColor"/>
+            <path stroke="currentColor" d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+          </svg>
+        </button>
+      </header>
+
+      <div id="notification" class="notification hidden"></div>
+
+      <div class="compact-tools">
+        <a href="tools/compressor.html" class="tool-card" data-tool="compressor">
+          <div class="tool-icon">
+            <svg viewBox="0 0 24 24">
+              <rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="white"/>
+              <circle cx="8.5" cy="8.5" r="1.5" fill="white"/>
+              <path stroke="white" d="M21 15l-5-5-11 11"/>
+            </svg>
+          </div>
+          <h3>Image Compressor</h3>
+          <p class="tool-desc">Shrink images effortlessly</p>
+        </a>
+        <a href="tools/pdf-to-jpg.html" class="tool-card" data-tool="pdf2jpg">
+          <div class="tool-icon">
+            <svg viewBox="0 0 24 24">
+              <path fill="none" stroke="white" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8" stroke="white" fill="none"/>
+              <rect x="8" y="12" width="8" height="6" rx="1" fill="white"/>
+            </svg>
+          </div>
+          <h3>PDF to JPG</h3>
+          <p class="tool-desc">Extract PDF pages as images</p>
+        </a>
+        <a href="tools/jpg-to-pdf.html" class="tool-card" data-tool="jpg2pdf">
+          <div class="tool-icon">
+            <svg viewBox="0 0 24 24">
+              <rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="white"/>
+              <circle cx="8.5" cy="8.5" r="1.5" fill="white"/>
+              <path stroke="white" d="M21 15l-5-5-11 11"/>
+              <path stroke="white" d="M17 15l-5-5-5 5"/>
+            </svg>
+          </div>
+          <h3>JPG to PDF</h3>
+          <p class="tool-desc">Merge images into PDFs</p>
+        </a>
+        <a href="tools/qr-generator.html" class="tool-card" data-tool="qr">
+          <div class="tool-icon">
+            <svg viewBox="0 0 24 24">
+              <rect x="3" y="3" width="6" height="6" fill="white"/>
+              <rect x="15" y="3" width="6" height="6" fill="white"/>
+              <rect x="3" y="15" width="6" height="6" fill="white"/>
+              <rect x="15" y="15" width="6" height="6" fill="white"/>
+              <path stroke="white" d="M12 8v8M8 12h8"/>
+            </svg>
+          </div>
+          <h3>QR Generator</h3>
+          <p class="tool-desc">Create scannable QR codes</p>
+        </a>
+      </div>
+    </main>
+  </div>
+  <script src="js/main.js"></script>
+</body>
+</html>
